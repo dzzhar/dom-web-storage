@@ -12,7 +12,7 @@ function generateListObject(id, title, author, year, timestamp, isCompleted) {
     id,
     title,
     author,
-    year,
+    year: parseInt(year),
     timestamp,
     isCompleted,
   };
@@ -36,7 +36,7 @@ function findListIndex(listId) {
   return -1;
 }
 
-function isStorageExist() /* boolean */ {
+function isStorageExist() {
   if (typeof Storage === undefined) {
     alert("Browser kamu tidak mendukung local storage");
     return false;
@@ -74,12 +74,12 @@ function makeList(listObject) {
   const textAuthor = document.createElement("h2");
   textAuthor.innerText = author;
 
-  const textYear = document.createElement("h3");
-  textYear.innerText = year;
+  const numberYear = document.createElement("h3");
+  numberYear.innerText = year;
 
   const textContainer = document.createElement("div");
   textContainer.classList.add("inner");
-  textContainer.append(textTitle, textAuthor, textYear);
+  textContainer.append(textTitle, textAuthor, numberYear);
 
   const container = document.createElement("div");
   container.classList.add("item", "shadow");
@@ -107,7 +107,13 @@ function makeList(listObject) {
       addTaskToCompleted(id);
     });
 
-    container.append(checkButton);
+    const trashButton = document.createElement("button");
+    trashButton.classList.add("trash-button");
+    trashButton.addEventListener("click", function () {
+      removeTaskFromList(id);
+    });
+
+    container.append(checkButton, trashButton);
   }
 
   return container;
@@ -116,7 +122,7 @@ function makeList(listObject) {
 function addList() {
   const textTitle = document.getElementById("title").value;
   const textAuthor = document.getElementById("author").value;
-  const textYear = document.getElementById("year").value;
+  const numberYear = document.getElementById("year").value;
   const date = new Date();
   const timestamp = date.toLocaleDateString();
 
@@ -125,13 +131,23 @@ function addList() {
     generatedID,
     textTitle,
     textAuthor,
-    textYear,
+    numberYear,
     timestamp,
     false
   );
 
   lists.push(listObject);
 
+  document.dispatchEvent(new Event(RENDER_EVENT));
+  saveData();
+}
+
+function removeTaskFromList(listId) {
+  const listTarget = findListIndex(listId);
+
+  if (listTarget === -1) return;
+
+  lists.splice(listTarget, 1);
   document.dispatchEvent(new Event(RENDER_EVENT));
   saveData();
 }
